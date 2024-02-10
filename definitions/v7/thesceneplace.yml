@@ -110,6 +110,20 @@ search:
     selector: "table.lista > tbody > tr:has(a[href^=\"index.php?page=torrent-details&id=\"]):has(td[width=\"30\"]){{ if .Config.freeleech }}:has(img[src=\"images/freeleech.gif\"]){{ else }}{{ end }}{{ if .Config.freeleech }}, table.lista > tbody > tr:has(a[href^=\"index.php?page=torrent-details&id=\"]):has(td[width=\"30\"]):has(img[src=\"images/gold.gif\"]){{ else }}{{ end }}"
 
   fields:
+    title_torrent:
+      selector: a[href^="download.php?id="]
+      attribute: href
+      filters:
+        - name: querystring
+          args: f
+        - name: replace
+          args: ["&amp;", "&"]
+        - name: replace
+          args: ["&#039;", "'"]
+        - name: re_replace
+          args: ["(?i)\\.torrent$", ""]
+    title_text:
+      selector: a[href^="index.php?page=torrent-details&id="]
     category:
       selector: a[href^="index.php?page=torrents&category="]
       attribute: href
@@ -117,7 +131,7 @@ search:
         - name: querystring
           args: category
     title:
-      selector: a[href^="index.php?page=torrent-details&id="]
+      text: "{{ if .Result.title_torrent }}{{ .Result.title_torrent }}{{ else }}{{ .Result.title_text }}{{ end }}"
     poster:
       selector: a[href^="index.php?page=torrent-details&id="]
       attribute: onmouseover
@@ -140,7 +154,7 @@ search:
       # auto adjusted by site account profile
       filters:
         - name: dateparse
-          args: "02/01/2006"
+          args: "dd/MM/yyyy"
     seeders:
       selector: td:has(a[href^="download.php?id="]) ~ td ~ td
     leechers:

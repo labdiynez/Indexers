@@ -1,5 +1,7 @@
 # Indexers
 
+[![Supported Indexers](https://img.shields.io/badge/Supported%20Indexers-View%20all%20currently%20supported%20indexers%20%26%20trackers-important)](https://wiki.servarr.com/en/prowlarr/supported-indexers)
+
 This Repo contains Cardigann YML indexer definitions for [Prowlarr](https://github.com/Prowlarr/Prowlarr).
 
 For more information on the formatting of the YML Indexer Definition, please see [our Prowlarr Cardigann YML Version / Definition wiki entry](https://wiki.servarr.com/en/prowlarr/cardigann-yml-definition)
@@ -29,11 +31,14 @@ npm install -g ajv-cli-servarr ajv-formats
 To test the definition:
 
 ```bash
- ajv test -d "definitions/v{VERSION}/{INDEXER FILE NAME}.yml" -s "definitions/v{VERSION}/schema.json" --valid -c ajv-formats
+ ajv test -d "definitions/v{VERSION}/{INDEXER FILE NAME}.yml" -s "definitions/v{VERSION}/schema.json" --valid -c ajv-formats --spec=draft2019
 ```
 
 ## Active Versions
 
+- [V8 Indexers](https://github.com/Prowlarr/Prowlarr/commit/1529527af9d2bf09dcd1b540b4c6f95a7dd00bd1) - Dev 1.1.0.2322
+  - Prowlarr Cardigann v8 includes several changes such as
+    - HtmlEncode and HtmlDecode filters
 - [V7 Indexers](https://github.com/Prowlarr/Prowlarr/commit/ee6467073f64cfaa5ef0de2225f39f0fd0eb5c05) - Dev 0.4.4.1947
   - Prowlarr Cardigann v7 includes several changes such as
     - `Publisher`, `Year`, `Genre`, Query support

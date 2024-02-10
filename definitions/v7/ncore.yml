@@ -1,7 +1,7 @@
 ---
 id: ncore
-name: Ncore
-description: "Ncore is a Hungarian Private Torrent Tracker for Movies/Series/General"
+name: nCore
+description: "nCore is a Hungarian Private Torrent Tracker for Movies/Series/General"
 language: hu-HU
 type: private
 encoding: UTF-8
@@ -52,7 +52,7 @@ caps:
   modes:
     search: [q]
     tv-search: [q, season, ep]
-    movie-search: [q]
+    movie-search: [q, imdbid]
     music-search: [q]
     book-search: [q]
 
@@ -60,27 +60,38 @@ settings:
   - name: username
     type: text
     label: Username
-
   - name: password
     type: password
     label: Password
+  - name: 2facode
+    type: text
+    label: 2FA code
+  - name: info_2fa
+    type: info
+    label: "About 2FA code"
+    default: "Only fill in the <b>2FA code</b> box if you have enabled <b>2FA</b> on the nCore Web Site. Otherwise just leave it empty."
+
+login:
+  method: form
+  path: login.php?set_lang=en
+  submitpath: login.php
+  inputs:
+    nev: "{{ .Config.username }}"
+    pass: "{{ .Config.password }}"
+    2factor: "{{ .Config.2facode }}"
+    ne_leptessen_ki: "1"
+    set_lang: "en"
+    submitted: "1"
+  error:
+    - selector: div#hibauzenet table td:contains("!")
+  test:
+    path: index.php
+    selector: a[href*="profile.php"]
 
 download:
   selectors:
     - selector: a[href^="torrents.php"]
       attribute: href
-login:
-  method: form
-  path: login.php
-  submitpath: login.php
-  inputs:
-    nev: "{{.Config.username}}"
-    pass: "{{.Config.password}}"
-    ne_leptessen_ki: "1"
-    set_lang: "hu"
-    submitted: "1"
-  test:
-    path: index.php
 
 search:
   paths:
@@ -94,9 +105,9 @@ search:
     nyit_jatek_resz: "true"
     nyit_prog_resz: "true"
     nyit_konyv_resz: "true"
-    mire: "{{.Keywords}}"
-    miben: "name"
-    tipus: "{{if .Categories}}kivalasztottak_kozott{{else}}all_own{{end}}"
+    mire: "{{ if .Query.IMDBID }}{{ .Query.IMDBID }}{{ else }}{{ .Keywords }}{{ end }}"
+    miben: "{{ if .Query.IMDBID }}imdb{{ else }}name{{ end }}"
+    tipus: "{{ if .Categories }}kivalasztottak_kozott{{ else }}all_own{{ end }}"
     submit.x: "1"
     submit.y: "18"
     tags: ""
@@ -150,7 +161,7 @@ search:
         - name: replace
           args: ["<br>", " "]
         - name: dateparse
-          args: "2006-01-0215:04:05"
+          args: "yyyy-MM-ddHH:mm:ss"
     minimumratio:
       text: 1.0
     minimumseedtime:

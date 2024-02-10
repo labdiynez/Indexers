@@ -9,16 +9,17 @@
 ## Using the Script
 ### Suggested to run from the current directory being Prowlarr/Indexers local Repo using Git Bash `./scripts/prowlarr-indexers-jackettpull.sh`
 
-# Check if Required NPM Modules are installed and install if needed
-package_servarr='ajv-cli-servarr'
-package_formats='ajv-formats'
-if [ "$(npm list -g | grep -c $package_servarr)" -eq 0 ]; then
-    echo "$package_servarr npm package missing. installing"
-    npm -g install $package_servarr
+if ! command -v npx &> /dev/null
+then
+    echo "npx could not be found. check your node installation"
+    exit 1
 fi
-if [ "$(npm list -g | grep -c $package_formats)" -eq 0 ]; then
-    echo "$package_formats npm package missing. installing"
-    npm -g install $package_formats
+
+# Check if Required NPM Modules are installed
+if ! npm list --depth=0 ajv-cli-servarr &> /dev/null || ! npm list --depth=0 ajv-formats &> /dev/null
+then
+    echo "required npm packages are missing, you should run \"npm install\""
+    exit 2
 fi
 
 ## Enhanced Logging
@@ -67,7 +68,7 @@ prowlarr_commit_template="jackett indexers as of"
 ### v5 purged and frozen 2022-10-14
 ### v6 purged and frozen 2022-10-14
 min_schema=7
-max_schema=7
+max_schema=9
 new_schema=$((max_schema + 1))
 ## Switch to Prowlarr directory and fetch all
 cd "$prowlarr_git_path" || exit
@@ -243,6 +244,7 @@ for pick_commit in ${commit_range}; do
             # use our package json and package-lock
             git checkout --ours "package.json"
             git checkout --ours "package-lock.json"
+            git checkout --ours ".editorconfig"
             git rm --f --q --ignore-unmatch "*.cs*"
             git rm --f --q --ignore-unmatch "src/Jackett*/**.js*"
             git rm --f --q --ignore-unmatch "*.iss*"
@@ -291,6 +293,9 @@ done
 echo "--- --------------------------------------------- completed cherry pick actions ------------------------------"
 echo "--- Evaluating and Reviewing Changes"
 
+# TODO: find a better way to ignore schema.json changes from Jackett
+git checkout HEAD -- "definitions/v*/schema.json"
+
 # New Indexers pulled
 # Segment Changes
 added_indexers=$(git diff --cached --diff-filter=A --name-only | grep ".yml" | grep "v[$min_schema-$max_schema]")
@@ -314,7 +319,7 @@ function determine_best_schema_version() {
         dir="definitions/v$i"
         schema="$dir/schema.json"
         echo "checking file [$def_file] against schema [$schema]"
-        ajv test -d "$def_file" -s "$schema" --valid -c ajv-formats
+        npx ajv test -d "$def_file" -s "$schema" --valid -c ajv-formats --spec=draft2019
         test_resp=$?
         if [ $test_resp -eq 0 ]; then
             echo "Definition [$def_file] matches schema [$schema]"
@@ -338,7 +343,7 @@ function determine_schema_version() {
     dir="definitions/$check_version"
     schema="$dir/schema.json"
     echo "checking file against schema [$schema]"
-    ajv test -d "$def_file" -s "$schema" --valid -c ajv-formats
+    npx ajv test -d "$def_file" -s "$schema" --valid -c ajv-formats --spec=draft2019
     test_resp=$?
     if [ $test_resp -eq 0 ]; then
         echo "Definition [$def_file] matches schema [$schema]"
@@ -513,6 +518,9 @@ if [ -d "$new_vers_dir" ]; then
         rmdir $new_vers_dir
     fi
 fi
+
+git rm -r -f -q --ignore-unmatch --cached node_modules
+
 ## Wait for user interaction to handle any conflicts and review
 echo "--- After review; the script will commit the changes."
 read -ep $"Press any key to continue or [Ctrl-C] to abort.  Waiting for human review..." -n1 -s

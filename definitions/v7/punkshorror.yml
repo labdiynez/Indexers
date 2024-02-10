@@ -22,6 +22,7 @@ caps:
     - {id: 65, cat: Movies, desc: "Horror Hun"}
     - {id: 82, cat: XXX, desc: "Horror XXX"}
     - {id: 94, cat: Movies, desc: "Kamerás filmek"}
+    - {id: 98, cat: Movies/HD, desc: "MD-HD"}
     - {id: 86, cat: Movies, desc: "Mystery-Fantasy Eng"}
     - {id: 85, cat: Movies, desc: "Mystery-Fantasy Hun"}
     - {id: 83, cat: Movies, desc: "Punk Release"}
@@ -138,7 +139,7 @@ search:
         - name: append
           args: " +01:00" # CET
         - name: dateparse
-          args: "2006-01-0215:04:05 -07:00"
+          args: "yyyy-MM-ddHH:mm:ss zzz"
     poster:
       selector: a[onmouseover]
       attribute: onmouseover
@@ -153,6 +154,10 @@ search:
       selector: td:nth-last-child(3)
     leechers:
       selector: td:nth-last-child(2)
+    description:
+      case:
+        img[src="pic/yes.png"]: Verified
+        img[src="pic/nincs.png"]: Unverified
     downloadvolumefactor:
       case:
         img[src="pic/golden.gif"]: 0

@@ -127,7 +127,8 @@ login:
     - selector: div.klaida
     - selector: p.error_text
   test:
-    path: lt/torrents
+    path: lt/main
+    selector: a[href="myaccount"]
 
 search:
   paths:
@@ -181,6 +182,10 @@ search:
       text: "{{ if .Result.leechers_optional }}{{ .Result.leechers_optional }}{{ else }}0{{ end }}"
     size:
       selector: td.size_cell
+    description:
+      case:
+        img[src$="/checked.png"]: Verified
+        "*": Unverified
     downloadvolumefactor:
       case:
         img[src$="/freedownload.gif"]: 0
@@ -194,7 +199,7 @@ search:
         - name: append
           args: " +02:00" # EET
         - name: dateparse
-          args: "2006-01-02 15:04 -07:00"
+          args: "yyyy-MM-dd HH:mm zzz"
     minimumratio:
       text: 0.41
 # engine n/a
